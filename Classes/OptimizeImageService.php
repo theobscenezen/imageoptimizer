@@ -4,6 +4,7 @@ namespace Lemming\Imageoptimizer;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\Logger;
 use TYPO3\CMS\Core\Log\LogLevel;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Utility\CommandUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -44,12 +45,14 @@ class OptimizeImageService
      * @param string $extension
      * @param bool $fileIsUploaded
      * @param bool $testMode
-     * @throws BinaryNotFoundException
+     * @param Folder|null $targetFolder
      * @return bool
+     * @throws BinaryNotFoundException
      */
-    public function process($file, $extension = null, $fileIsUploaded = false, $testMode = false)
+    public function process($file, $extension = null, $fileIsUploaded = false, $testMode = false, Folder $targetFolder = null)
     {
         $this->reset();
+        $excludePaths = [];
 
         if ($extension === null) {
             $pathinfo = pathinfo($file);
@@ -65,6 +68,18 @@ class OptimizeImageService
 
         if ((bool)$this->configuration[$extension . 'On' . $when] === false && $testMode === false) {
             return;
+        }
+
+        if ($targetFolder !== null) {
+            if ($this->configuration[$extension . 'ExcludePaths'] !== '') {
+                $excludePaths = explode(',', $this->configuration[$extension . 'ExcludePaths']);
+            }
+
+            foreach ($excludePaths as $excludePath) {
+                if (strpos($targetFolder->getCombinedIdentifier(), $excludePath) !== false) {
+                    return;
+                }
+            }
         }
 
         $binary = CommandUtility::getCommand(escapeshellcmd($this->configuration[$extension . 'Binary']));

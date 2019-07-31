@@ -28,7 +28,7 @@ class FileAspects
      */
     public function addFile($targetFileName, Folder $targetFolder, $sourceFilePath)
     {
-        $this->service->process($sourceFilePath, pathinfo($targetFileName)['extension'], true);
+        $this->service->process($sourceFilePath, pathinfo($targetFileName)['extension'], true, false, $targetFolder);
     }
 
     /**
@@ -39,7 +39,7 @@ class FileAspects
      */
     public function replaceFile(FileInterface $file, $localFilePath)
     {
-        $this->service->process($localFilePath, $file->getExtension(), true);
+        $this->service->process($localFilePath, $file->getExtension(), true, false, $file->getParentFolder());
     }
 
     /**
