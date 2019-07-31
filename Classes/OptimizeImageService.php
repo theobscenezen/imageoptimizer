@@ -46,13 +46,12 @@ class OptimizeImageService
      * @param bool $fileIsUploaded
      * @param bool $testMode
      * @param Folder|null $targetFolder
-     * @return bool
+     * @return void|bool
      * @throws BinaryNotFoundException
      */
     public function process($file, $extension = null, $fileIsUploaded = false, $testMode = false, Folder $targetFolder = null)
     {
         $this->reset();
-        $excludePaths = [];
 
         if ($extension === null) {
             $pathinfo = pathinfo($file);
@@ -70,16 +69,8 @@ class OptimizeImageService
             return;
         }
 
-        if ($targetFolder !== null) {
-            if ($this->configuration[$extension . 'ExcludePaths'] !== '') {
-                $excludePaths = GeneralUtility::trimExplode(',', $this->configuration[$extension . 'ExcludePaths']);
-            }
-
-            foreach ($excludePaths as $excludePath) {
-                if (strpos($targetFolder->getCombinedIdentifier(), $excludePath) !== false) {
-                    return;
-                }
-            }
+        if ($targetFolder !== null && $this->isTargetFolderExcluded($extension, $targetFolder)) {
+            return;
         }
 
         $binary = CommandUtility::getCommand(escapeshellcmd($this->configuration[$extension . 'Binary']));
@@ -135,7 +126,7 @@ class OptimizeImageService
     /**
      * @return string
      */
-    public function getCommand()
+    public function getCommand(): string
     {
         return $this->command;
     }
@@ -143,9 +134,59 @@ class OptimizeImageService
     /**
      * @return array
      */
-    public function getOutput()
+    public function getOutput(): array
     {
         return $this->output;
     }
 
+    /**
+     * @param $haystack
+     * @param $needle
+     * @return bool
+     */
+    private function startsWith(string $haystack, string $needle): bool
+    {
+        return strpos($haystack, $needle) === 0;
+    }
+
+    /**
+     * @param $haystack
+     * @param $needle
+     * @return bool
+     */
+    private function endsWith(string $haystack, string $needle): bool
+    {
+        $length = strlen($needle);
+        if ($length === 0) {
+            return true;
+        }
+
+        return substr($haystack, -$length) === $needle;
+    }
+
+    /**
+     * @param string $extension
+     * @param Folder $targetFolder
+     * @return bool
+     */
+    private function isTargetFolderExcluded(string $extension, Folder $targetFolder): bool
+    {
+        $excludePaths = [];
+        if ($this->configuration[$extension . 'ExcludePaths'] !== '') {
+            $excludePaths = GeneralUtility::trimExplode(',', $this->configuration[$extension . 'ExcludePaths']);
+        }
+
+        foreach ($excludePaths as $excludePath) {
+            if (!$this->startsWith($excludePath, '/')) {
+                $excludePath = '/' . $excludePath;
+            }
+            if (!$this->endsWith($excludePath, '/')) {
+                $excludePath .= '/';
+            }
+            if (strpos($targetFolder->getCombinedIdentifier(), $excludePath) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
