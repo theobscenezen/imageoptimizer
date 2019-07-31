@@ -2,6 +2,8 @@
 
 Lossless image optimization. Process jpg/png/gif/svg images with binaries and parameters of your choice.
 
+Adds possibility to exclude paths from being optimized after upload.
+
 ## Features
 
 * Optimize images on upload or after processing (files in `fileadmin/_processed_/`)
