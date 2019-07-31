@@ -72,7 +72,7 @@ class OptimizeImageService
 
         if ($targetFolder !== null) {
             if ($this->configuration[$extension . 'ExcludePaths'] !== '') {
-                $excludePaths = explode(',', $this->configuration[$extension . 'ExcludePaths']);
+                $excludePaths = GeneralUtility::trimExplode(',', $this->configuration[$extension . 'ExcludePaths']);
             }
 
             foreach ($excludePaths as $excludePath) {
