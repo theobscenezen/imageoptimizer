@@ -1,5 +1,5 @@
 {
-  "name": "christophlehmann/imageoptimizer",
+  "name": "theobscenezen/imageoptimizer",
   "type": "typo3-cms-extension",
   "description": "Optimize uploaded/processed images with binaries of your choice",
   "keywords": [
